@@ -32,6 +32,19 @@ func editHandler(w http.ResponseWriter, r *http.Request) {
   // fmt.Fprintf(w, "Hi %s!", r.URL.Path[1:])
 }
 
+func saveHandler(w http.ResponseWriter, r *http.Request) {
+  title := r.URL.Path[6:]
+  body := r.FormValue("body")
+  p := &Page{Title:title, Body:[]byte(body)}
+  p.save()
+
+  http.Redirect(w, r, "/view/" + title, http.StatusFound)
+}
+
+func (p *Page) save() error {
+  filename := p.Title + ".txt"
+  return ioutil.WriteFile(filename, p.Body,0600)
+}
 
 func loadPage(title string) (*Page, error) {
   filename := title + ".txt"
@@ -45,5 +58,6 @@ func loadPage(title string) (*Page, error) {
 func main(){
   http.HandleFunc("/",handler)
   http.HandleFunc("/edit/",editHandler)
+  http.HandleFunc("/save/",saveHandler)
   http.ListenAndServe(":8080",nil)
 }
